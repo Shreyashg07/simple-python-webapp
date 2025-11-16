@@ -1,2 +1,4 @@
-flask
+flask==0.12
 pytest
+Python 3.6.x
+django==1.11.0
