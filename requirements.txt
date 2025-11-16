@@ -1,4 +1,4 @@
-flask==0.12
-pytest
-Python 3.6.x
 django==1.11.0
+flask==0.12
+requests==2.3.0
+urllib3==1.24.1
