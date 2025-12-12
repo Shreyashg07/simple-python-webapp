@@ -32,15 +32,19 @@ pipeline {
             steps {
                 echo '🔍 Running Trivy vulnerability scan...'
                 sh '''
-                    mkdir -p trivy-reports
-                    # Run scan using config file if exists, else default to fs scan
+                    mkdir -p trivy-reports contrib
+
+                    # ✅ Auto-download the HTML template (fix for "no such file or directory" error)
+                    wget -q https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/html.tpl -O contrib/html.tpl
+
+                    # ✅ Run Trivy filesystem scan
                     if [ -f trivy.yaml ]; then
                         trivy fs --config trivy.yaml
                     else
                         trivy fs --format json -o trivy-reports/trivy-report.json .
                     fi
 
-                    # Generate human-readable HTML report
+                    # ✅ Generate human-readable HTML report
                     trivy fs --format template --template "@contrib/html.tpl" -o trivy-reports/trivy-report.html .
                 '''
             }
@@ -60,3 +64,4 @@ pipeline {
         }
     }
 }
+
