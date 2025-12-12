@@ -30,18 +30,33 @@ pipeline {
 
         stage('Trivy Scan') {
             steps {
-                echo 'Running Trivy vulnerability scan...'
+                echo '🔍 Running Trivy vulnerability scan...'
                 sh '''
                     mkdir -p trivy-reports
-                    trivy fs --format json -o trivy-reports/trivy-report.json .
+                    # Run scan using config file if exists, else default to fs scan
+                    if [ -f trivy.yaml ]; then
+                        trivy fs --config trivy.yaml
+                    else
+                        trivy fs --format json -o trivy-reports/trivy-report.json .
+                    fi
+
+                    # Generate human-readable HTML report
+                    trivy fs --format template --template "@contrib/html.tpl" -o trivy-reports/trivy-report.html .
                 '''
             }
             post {
                 always {
-                    archiveArtifacts artifacts: 'trivy-reports/trivy-report.json', fingerprint: true
+                    echo '📦 Archiving Trivy reports...'
+                    archiveArtifacts artifacts: 'trivy-reports/*.json', fingerprint: true
+                    archiveArtifacts artifacts: 'trivy-reports/*.html', fingerprint: true
                 }
             }
         }
     }
-}
 
+    post {
+        always {
+            echo '✅ Pipeline completed (with or without issues).'
+        }
+    }
+}
